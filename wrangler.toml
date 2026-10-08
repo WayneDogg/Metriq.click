@@ -1,5 +1,5 @@
 name = "metriq-agent-ready"
-main = "src/worker.js"
+main = "_worker/src/worker.js"
 compatibility_date = "2025-09-01"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
