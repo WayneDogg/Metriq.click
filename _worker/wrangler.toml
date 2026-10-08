@@ -1,0 +1,13 @@
+name = "metriq-agent-ready"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[vars]
+BOOKING_URL = "https://www.linkedin.com/in/wayneshirreffs/"
+
+[observability]
+enabled = true
+
+# Secret (set in the dashboard): ANTHROPIC_API_KEY
