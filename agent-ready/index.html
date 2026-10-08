@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Agent-Ready Playbook | METRIQ</title>
+<meta name="description" content="How to make sure the AI agents your customers send can find you, trust you & actually buy from you. By Wayne Shirreffs, METRIQ.">
+<meta property="og:title" content="The Agent-Ready Playbook">
+<meta property="og:description" content="Your next best customer might never see your ad. Make sure their agent still picks you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,700;112,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column like an operator's spec sheet; agent log + scorecard are the two "instrument" blocks */
+:root{
+  --bg:#f3f4f6; --surface:#ffffff; --ink:#14181f; --muted:#5b6370; --line:#d9dde3;
+  --accent:#d9480f; --accent-soft:#fde8dc; --good:#2b8a3e; --warn:#b7791f; --bad:#c92a2a;
+  --log-bg:#14181f; --log-fg:#d6dae0; --log-dim:#7c8592;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101318; --surface:#181c23; --ink:#eceef1; --muted:#9aa2ae; --line:#2b313b;
+  --accent:#ff7a3d; --accent-soft:#3a2216; --good:#51cf66; --warn:#f2b84b; --bad:#ff6b6b;
+  --log-bg:#0a0c10; --log-fg:#d6dae0; --log-dim:#6b7380; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101318; --surface:#181c23; --ink:#eceef1; --muted:#9aa2ae; --line:#2b313b;
+  --accent:#ff7a3d; --accent-soft:#3a2216; --good:#51cf66; --warn:#f2b84b; --bad:#ff6b6b;
+  --log-bg:#0a0c10; --log-fg:#d6dae0; --log-dim:#6b7380; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;padding-inline:20px;padding-block:0 64px}
+.wrap{max-width:720px;margin:0 auto}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible+label{outline:2px solid var(--accent);outline-offset:3px}
+h1,h2,h3{font-family:var(--display);font-stretch:112%;text-wrap:balance;letter-spacing:-.01em;line-height:1.08;margin:0}
+h1{font-size:clamp(40px,8vw,68px);font-weight:800}
+h2{font-size:clamp(26px,4.5vw,34px);font-weight:800;margin-bottom:14px}
+p{margin:0 0 14px}
+.eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:500}
+
+header{padding-block:56px 36px;border-bottom:2px solid var(--ink);display:grid;gap:18px}
+.dek{font-size:20px;color:var(--muted);max-width:56ch;margin:0}
+.byline{font-family:var(--mono);font-size:14px;color:var(--muted)}
+.byline b{color:var(--ink);font-weight:500}
+
+section{padding-block:44px 8px;display:grid;gap:4px}
+.note{background:var(--accent-soft);border-left:3px solid var(--accent);padding:16px 18px;margin:8px 0 14px;font-size:16px}
+.note p:last-child{margin:0}
+
+/* agent log */
+.log{background:var(--log-bg);color:var(--log-fg);border-radius:10px;font-family:var(--mono);font-size:14.5px;line-height:1.9;margin:10px 0 18px;overflow-x:auto}
+.log .bar{padding:10px 16px;border-bottom:1px solid #2a2f38;color:var(--log-dim);font-size:13px}
+.log ol{list-style:none;margin:0;padding:16px 18px;counter-reset:s}
+.log li{display:grid;grid-template-columns:2.2em 1fr;gap:8px;min-width:0}
+.log li::before{counter-increment:s;content:counter(s,decimal-leading-zero);color:var(--log-dim)}
+.log .k{color:#ffa36b}
+.log .c{color:var(--log-dim)}
+
+/* scorecard */
+.score{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:10px 0 18px}
+.meter{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border-bottom:1px solid var(--line);padding:16px 18px;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;align-items:center}
+.num{font-family:var(--display);font-stretch:112%;font-weight:800;font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+.num small{font-size:20px;color:var(--muted)}
+.verdict{font-weight:600;font-size:16px}
+.verdict span{display:block;font-weight:400;font-size:14px;color:var(--muted)}
+.track{grid-column:1/-1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--bad);transition:width .3s ease,background .3s}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+.items{list-style:none;margin:0;padding:0}
+.items li{border-top:1px solid var(--line)}
+.items li:first-child{border-top:0}
+.items input{position:absolute;opacity:0;pointer-events:none}
+.items label{display:grid;grid-template-columns:28px 1fr;gap:14px;padding:16px 18px;cursor:pointer;min-width:0}
+.box{width:24px;height:24px;border:2px solid var(--muted);border-radius:6px;margin-top:2px;display:grid;place-items:center;transition:background .15s,border-color .15s}
+.box svg{width:14px;height:14px;opacity:0}
+.items input:checked+label .box{background:var(--good);border-color:var(--good)}
+.items input:checked+label .box svg{opacity:1}
+.items input:focus-visible+label{outline:2px solid var(--accent);outline-offset:-4px}
+.items strong{display:block;font-weight:600;line-height:1.4}
+.items em{display:block;font-style:normal;color:var(--muted);font-size:15px;line-height:1.55;margin-top:4px}
+.items .bonus strong::after{content:"Bonus";font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:2px}
+.reset{font:inherit;font-size:14px;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:12px 18px;border-top:1px solid var(--line);width:100%;text-align:left}
+
+/* 30 day plan */
+.weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:10px 0 18px}
+.wk{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:6px;align-content:start}
+.wk .eyebrow{font-size:12px}
+.wk h3{font-size:20px}
+.wk p{font-size:15.5px;margin:0;color:var(--muted)}
+@media (max-width:560px){.weeks{grid-template-columns:1fr}}
+
+.cta{margin-top:40px;border-top:2px solid var(--ink);padding-top:32px}
+.sign{font-family:var(--mono);font-size:15px;margin-top:22px;line-height:1.7}
+footer{margin-top:44px;font-size:13px;color:var(--muted)}
+
+.scanbox{background:var(--ink);color:var(--bg);border-radius:12px;padding:20px 22px;display:flex;gap:14px 22px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0 18px}
+.scanbox p{margin:0;max-width:44ch;font-size:16px}
+.scanbox strong{display:block;font-family:var(--display);font-stretch:112%;font-size:21px;line-height:1.15;margin-bottom:4px}
+.scanbtn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;font-weight:600;text-decoration:none;padding:13px 20px;border-radius:10px;white-space:nowrap}
+.scanbtn:hover{filter:brightness(1.06)}
+.skip{font-size:16px;margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">METRIQ</div>
+  <h1>The Agent-Ready Playbook</h1>
+  <p class="dek">How to make sure the AI agents your customers send can find you, trust you & actually buy from you.</p>
+  <p class="skip">Short on time? <a href="scan/">Let our scanner check your site for you in about 30 seconds →</a></p>
+  <div class="byline">By <b>Wayne Shirreffs</b> · Founder, METRIQ - Acquisition Strategy for the AI-Native Economy · October 2026</div>
+</header>
+
+<section>
+  <div class="eyebrow">What just happened</div>
+  <h2>The buyer just changed</h2>
+  <p>On October 6, 2026, Sierra & Meta announced the <a href="https://sierra.ai/blog/introducing-personal-agent-protocol">Personal Agent Protocol</a>, an open standard for how personal AI agents deal with businesses. Genesys, Instinct, Rocket, Shopify, Stripe & Walmart are building it with them.</p>
+  <p>In plain English… your customers are starting to send AI agents to do their shopping, booking & comparing for them. Now the big platforms are agreeing on how those agents knock on your door.</p>
+  <div class="note"><p>The v0.1 spec is due later this month. Payments (an agent completing a purchase without handling a card number) are on their roadmap, not live yet. You have a window right now. It won't stay open long.</p></div>
+  <p>I spent 20 years & over $100M of my own ad spend learning how to get a human to stop scrolling. An agent doesn't scroll. It reads, compares & picks whoever is clearest & easiest to do business with. This playbook is how we're getting our partners ready for that.</p>
+</section>
+
+<section>
+  <div class="eyebrow">How it works</div>
+  <h2>How an agent actually shops</h2>
+  <p>Based on how the protocol is designed, here's the path an agent takes through your business:</p>
+  <div class="log" role="figure" aria-label="Steps a personal agent takes">
+    <div class="bar">personal_agent.log</div>
+    <ol>
+      <li><span><span class="k">discover</span> your site & what you offer <span class="c"># can it even tell what you sell?</span></span></li>
+      <li><span><span class="k">start session</span> as a guest <span class="c"># no login yet</span></span></li>
+      <li><span><span class="k">read</span> pricing, availability, return policy <span class="c"># the stuff you hide behind "call us"</span></span></li>
+      <li><span><span class="k">compare</span> you vs. the other 2-3 options <span class="c"># your ad never enters the picture</span></span></li>
+      <li><span><span class="k">act</span> sign in with the customer's OK & place the order <span class="c"># or move on to the next vendor</span></span></li>
+    </ol>
+  </div>
+  <p>It can do that through your regular website, through an API, or by talking to your own company agent if you have one. Every step is a spot where you either get picked or get skipped. And nobody tells you when you got skipped.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Score yourself</div>
+  <h2>The Agent-Ready Scorecard</h2>
+  <div class="scanbox">
+    <p><strong>Rather not grade yourself?</strong>Drop in your website & our Agent-Ready Scanner runs these checks for you. You get a score out of 100 & your top 3 fixes.</p>
+    <a class="scanbtn" href="scan/">Scan my site →</a>
+  </div>
+  <p>Or go old school. Be honest & check what's true for your business TODAY, not what's on the roadmap.</p>
+
+  <div class="score">
+    <div class="meter" aria-live="polite">
+      <div class="num" id="num">0<small>/10</small></div>
+      <div class="verdict" id="verdict">Invisible to agents<span>Most companies start here. That's the point of the list.</span></div>
+      <div class="track"><div class="fill" id="fill"></div></div>
+    </div>
+    <ul class="items" id="items">
+      <li><input type="checkbox" id="c1"><label for="c1"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>Your pricing is on the site in plain numbers.</strong><em>"Call for a quote" is a dead end for an agent. If it can't see a price, it compares the 2 competitors that show one.</em></span></label></li>
+      <li><input type="checkbox" id="c2"><label for="c2"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>Return, refund & cancellation terms live on 1 plain-language page.</strong><em>Agents check this before they buy for someone. Legalese buried in a PDF reads like risk.</em></span></label></li>
+      <li><input type="checkbox" id="c3"><label for="c3"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>Every offer page says what it is, who it's for & what it costs in the first 2 lines.</strong><em>Clever headlines were for humans. Clarity is for agents (and honestly converts humans better too).</em></span></label></li>
+      <li><input type="checkbox" id="c4"><label for="c4"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>Key pages carry structured data.</strong><em>Schema markup for your products, offers, business info & FAQs. Your dev or Shopify setup can usually add it in a day.</em></span></label></li>
+      <li><input type="checkbox" id="c5"><label for="c5"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>A guest can check availability & get real answers without creating an account.</strong><em>Agents start as guests. If everything useful sits behind a login, you lose them at step 2.</em></span></label></li>
+      <li><input type="checkbox" id="c6"><label for="c6"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>Someone can buy or book start to finish without a phone call.</strong><em>Every "talk to sales first" step is friction an agent routes around.</em></span></label></li>
+      <li><input type="checkbox" id="c7"><label for="c7"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>Your info matches everywhere.</strong><em>Site, Google profile, marketplaces, directories. Different prices or hours in 3 places makes an agent trust none of them.</em></span></label></li>
+      <li><input type="checkbox" id="c8"><label for="c8"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>Your FAQ answers the boring questions.</strong><em>Shipping times, warranty, minimums, contract length, service area. The boring stuff is exactly what an agent is sent to find out.</em></span></label></li>
+      <li><input type="checkbox" id="c9"><label for="c9"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>Reviews & proof are on the page as text.</strong><em>A testimonial baked into a graphic or a video is invisible to a machine reading your page.</em></span></label></li>
+      <li><input type="checkbox" id="c10"><label for="c10"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>You've actually tested it.</strong><em>You told an AI agent to research & buy what you sell, then watched whether it picked you, and why or why not. Takes 20 minutes. Most CEOs have never done it.</em></span></label></li>
+      <li class="bonus"><input type="checkbox" id="c11"><label for="c11"><span class="box"><svg viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.4"><path d="M2 7.5l3 3L12 3.5"/></svg></span><span><strong>You have an API or MCP endpoint for your key actions.</strong><em>For bigger operators. The protocol supports agents connecting through standards like MCP & OpenAPI. This is where it's heading.</em></span></label></li>
+    </ul>
+    <button class="reset" id="reset" type="button">Clear my answers</button>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Next 30 days</div>
+  <h2>The 30-day plan</h2>
+  <p>Don't try to fix all of it at once. Here's the order I'd run it in.</p>
+  <div class="weeks">
+    <div class="wk"><div class="eyebrow">Week 1</div><h3>Run the agent test</h3><p>Ask 2 or 3 different AI assistants to find & buy what you sell. Screenshot everything. Where did they get stuck? Who did they pick instead?</p></div>
+    <div class="wk"><div class="eyebrow">Week 2</div><h3>Fix the dead ends</h3><p>Put real pricing on the site. Rewrite your return & cancellation terms in plain English. Kill any "call us" step that doesn't need to exist.</p></div>
+    <div class="wk"><div class="eyebrow">Week 3</div><h3>Make it readable</h3><p>Rewrite the top of every offer page for clarity. Add structured data. Build out the boring FAQ. Get your info consistent everywhere.</p></div>
+    <div class="wk"><div class="eyebrow">Week 4</div><h3>Get on the protocol radar</h3><p>Read the v0.1 spec when it drops. If you're on Shopify or Stripe, watch for what they ship. Ask your dev team what an API path for orders would take.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">What doesn't change</div>
+  <h2>Humans still send the agent</h2>
+  <p>Your brand still matters. A person decides to send the agent, & they often tell it where to start looking. That's still won with great marketing, real proof & a reputation people talk about.</p>
+  <p>What changes is the last mile. The human gets you on the shortlist. The agent decides who gets the order. Most companies are only built for the first half of that.</p>
+</section>
+
+<section class="cta">
+  <div class="eyebrow">If you want help</div>
+  <h2>Want me to look at yours?</h2>
+  <p>This is exactly the gap I'm closing for partners at METRIQ right now… marketing that works on people AND the agents they send. It's my job to see around the corners.</p>
+  <p>If you're running a business doing $5M+ & you scored under 7, <a href="scan/">run the scanner</a> & book a call from your results page, or send me a DM on LinkedIn with the word <b>AGENT</b> & your score. I'll tell you straight where I'd start.</p>
+  <div class="sign">I'm rootin for ya,<br>• Wayne</div>
+</section>
+
+<footer>Source: Sierra, "Introducing Personal Agent Protocol," October 6, 2026. Protocol details may change as the spec is published.</footer>
+</div>
+
+<script>
+(function(){
+  var boxes=[].slice.call(document.querySelectorAll('#items input'));
+  var core=boxes.filter(function(b){return b.id!=='c11'});
+  var num=document.getElementById('num'),fill=document.getElementById('fill'),verdict=document.getElementById('verdict');
+  var KEY='agent-ready-checks';
+  try{var saved=JSON.parse(localStorage.getItem(KEY)||'[]');boxes.forEach(function(b){b.checked=saved.indexOf(b.id)>-1})}catch(e){}
+  function render(){
+    var n=core.filter(function(b){return b.checked}).length;
+    var bonus=document.getElementById('c11').checked;
+    num.innerHTML=n+'<small>/10'+(bonus?' +1':'')+'</small>';
+    fill.style.width=(n*10)+'%';
+    var t,s,c;
+    if(n<=4){t='Invisible to agents';s='Agents are skipping you right now & you have no way of knowing it.';c='var(--bad)'}
+    else if(n<=7){t='Findable, not pickable';s='Agents can see you. They are still picking someone clearer.';c='var(--warn)'}
+    else{t='Agent-ready';s='You are ahead of most of your market. Keep going & add the bonus.';c='var(--good)'}
+    if(n===0)s='Most companies start here. That\'s the point of the list.';
+    verdict.innerHTML=t+'<span>'+s+'</span>';
+    fill.style.background=c;
+    try{localStorage.setItem(KEY,JSON.stringify(boxes.filter(function(b){return b.checked}).map(function(b){return b.id})))}catch(e){}
+  }
+  boxes.forEach(function(b){b.addEventListener('change',render)});
+  document.getElementById('reset').addEventListener('click',function(){boxes.forEach(function(b){b.checked=false});render()});
+  render();
+})();
+</script>
+
+</body>
+</html>

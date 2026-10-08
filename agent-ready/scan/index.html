@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Agent-Ready Scanner | METRIQ</title>
+<meta name="description" content="Enter your website and see what an AI shopping agent sees. Get your Agent-Ready score out of 100 and the 3 fixes that matter most.">
+<meta property="og:title" content="Would an AI agent pick your business?">
+<meta property="og:description" content="Free Agent-Ready score for your website in about 30 seconds. By Wayne Shirreffs, METRIQ.">
+<meta property="og:type" content="website">
+<meta name="metriq-api" content="https://agent.metriq.click/api">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,700;112,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: same spec-sheet column as the playbook; the scan log is the hero instrument, results read top-down: score, fixes, full checklist, call */
+:root{
+  --bg:#f3f4f6; --surface:#ffffff; --ink:#14181f; --muted:#5b6370; --line:#d9dde3;
+  --accent:#d9480f; --accent-ink:#ffffff; --accent-soft:#fde8dc; --good:#2b8a3e; --warn:#b7791f; --bad:#c92a2a;
+  --good-soft:#e3f4e6; --warn-soft:#fbf0d9; --bad-soft:#fbe4e4;
+  --log-bg:#14181f; --log-fg:#d6dae0; --log-dim:#7c8592; --log-key:#ffa36b; --log-ok:#69db7c; --log-bad:#ff8787;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101318; --surface:#181c23; --ink:#eceef1; --muted:#9aa2ae; --line:#2b313b;
+  --accent:#ff7a3d; --accent-ink:#14181f; --accent-soft:#3a2216; --good:#51cf66; --warn:#f2b84b; --bad:#ff6b6b;
+  --good-soft:#16301d; --warn-soft:#352a12; --bad-soft:#3a1a1a;
+  --log-bg:#0a0c10; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101318; --surface:#181c23; --ink:#eceef1; --muted:#9aa2ae; --line:#2b313b;
+  --accent:#ff7a3d; --accent-ink:#14181f; --accent-soft:#3a2216; --good:#51cf66; --warn:#f2b84b; --bad:#ff6b6b;
+  --good-soft:#16301d; --warn-soft:#352a12; --bad-soft:#3a1a1a;
+  --log-bg:#0a0c10; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;padding-inline:20px;padding-block:0 72px}
+.wrap{max-width:760px;margin:0 auto}
+a{color:var(--accent);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+h1,h2,h3{font-family:var(--display);font-stretch:112%;text-wrap:balance;letter-spacing:-.01em;line-height:1.06;margin:0}
+h1{font-size:clamp(38px,7.5vw,62px);font-weight:800}
+h2{font-size:clamp(24px,4vw,32px);font-weight:800}
+h3{font-size:19px;font-weight:700;line-height:1.25}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:500}
+.muted{color:var(--muted)}
+
+header{padding-block:52px 28px;display:grid;gap:16px}
+.dek{font-size:19px;color:var(--muted);max-width:58ch}
+
+form{display:grid;gap:10px;margin-top:8px}
+.field{display:flex;gap:10px;flex-wrap:wrap}
+.field label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#url{flex:1 1 280px;min-width:0;font:inherit;font-size:18px;padding:15px 16px;border:2px solid var(--ink);border-radius:10px;background:var(--surface);color:var(--ink)}
+#url::placeholder{color:var(--muted)}
+.btn{font:inherit;font-weight:600;font-size:17px;border:0;border-radius:10px;padding:15px 22px;background:var(--accent);color:var(--accent-ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{filter:brightness(1.06)}
+.btn[disabled]{opacity:.6;cursor:progress}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.fine{font-size:14px;color:var(--muted)}
+.formerr{color:var(--bad);font-size:15px;font-weight:500}
+
+/* scan log */
+.log{background:var(--log-bg);color:var(--log-fg);border-radius:12px;font-family:var(--mono);font-size:14.5px;line-height:1.85;margin-top:26px;overflow:hidden}
+.log .bar{display:flex;justify-content:space-between;gap:10px;padding:10px 16px;border-bottom:1px solid #2a2f38;color:var(--log-dim);font-size:13px}
+.log ol{list-style:none;margin:0;padding:14px 18px;min-height:3em;overflow-x:auto}
+.log li{white-space:pre-wrap;word-break:break-word}
+.log .k{color:var(--log-key)} .log .ok{color:var(--log-ok)} .log .no{color:var(--log-bad)} .log .c{color:var(--log-dim)}
+.cursor::after{content:"▍";animation:blink 1s steps(2) infinite;color:var(--log-key)}
+@keyframes blink{50%{opacity:0}}
+
+/* idle: what we check */
+.checks-preview{margin-top:36px;display:grid;gap:12px}
+.checks-preview ol{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 24px}
+.checks-preview li{font-size:15.5px;padding-block:8px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px}
+.checks-preview li span:last-child{font-family:var(--mono);font-size:13px;color:var(--muted);white-space:nowrap}
+@media (max-width:600px){.checks-preview ol{grid-template-columns:1fr}}
+
+/* results */
+#results{display:grid;gap:34px;margin-top:34px}
+.scorecard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px 28px;align-items:center}
+.big{font-family:var(--display);font-stretch:112%;font-weight:800;font-size:96px;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.big small{font-size:28px;color:var(--muted);letter-spacing:0}
+.tier{display:inline-block;font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;padding:4px 10px;border-radius:999px;margin-bottom:10px}
+.tier.invisible{background:var(--bad-soft);color:var(--bad)} .tier.findable{background:var(--warn-soft);color:var(--warn)} .tier.ready{background:var(--good-soft);color:var(--good)}
+.scorecard h2{font-size:clamp(22px,3.6vw,28px)}
+.scorecard .site{font-family:var(--mono);font-size:14px;color:var(--muted);margin-top:8px;word-break:break-all}
+.track{grid-column:1/-1;height:10px;background:var(--line);border-radius:5px;position:relative;overflow:hidden}
+.fill{position:absolute;inset:0 auto 0 0;width:0;border-radius:5px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.ticks{grid-column:1/-1;position:relative;height:18px;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:-12px}
+.ticks span{position:absolute;top:0;white-space:nowrap}
+.ticks span:last-child{right:0}
+.ticks i{font-style:normal}
+@media (max-width:560px){.ticks i{display:none}}
+@media (max-width:560px){.scorecard{grid-template-columns:1fr}.big{font-size:80px}}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}.cursor::after{animation:none}}
+
+.summary{font-size:18px;max-width:62ch}
+.fixes{display:grid;gap:12px;counter-reset:f;margin-top:14px}
+.fix{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px 18px 64px;position:relative;counter-increment:f}
+.fix::before{content:counter(f);position:absolute;left:20px;top:16px;font-family:var(--display);font-stretch:112%;font-weight:800;font-size:28px;color:var(--accent);line-height:1}
+.fix p{color:var(--muted);font-size:16px;margin-top:4px}
+
+.list{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:14px}
+.row{display:grid;grid-template-columns:86px minmax(0,1fr) auto;gap:6px 16px;padding:16px 18px;border-top:1px solid var(--line);align-items:start}
+.row:first-child{border-top:0}
+.chip{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;padding:3px 0;border-radius:6px;text-align:center;margin-top:2px}
+.chip.pass{background:var(--good-soft);color:var(--good)} .chip.partial{background:var(--warn-soft);color:var(--warn)} .chip.fail{background:var(--bad-soft);color:var(--bad)}
+.row h3{font-family:var(--body);font-stretch:normal;font-size:16.5px;font-weight:600;letter-spacing:0}
+.row .found{font-size:15px;color:var(--muted);margin-top:4px}
+.row .pts{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;margin-top:3px}
+@media (max-width:560px){.row{grid-template-columns:1fr auto}.row .chip{grid-column:1;justify-self:start;padding:3px 10px}.row .pts{grid-column:2;grid-row:1}.row>div{grid-column:1/-1}}
+.extra{font-size:14.5px;color:var(--muted);padding:14px 18px;border-top:1px dashed var(--line)}
+
+.pitch{border-top:2px solid var(--ink);padding-top:30px;display:grid;gap:14px}
+.pitch p{max-width:60ch}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.sign{font-family:var(--mono);font-size:15px;line-height:1.7}
+
+.blocked{background:var(--bad-soft);border-radius:12px;padding:22px;display:grid;gap:8px}
+.blocked h2{color:var(--bad);font-size:clamp(22px,3.6vw,28px)}
+footer{margin-top:56px;font-size:13px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">METRIQ · Agent-Ready Scanner</div>
+  <h1>Would an AI agent pick your business?</h1>
+  <p class="dek">Drop in your website. In about 30 seconds you'll see what an AI shopping agent sees when it lands on your site, your Agent-Ready score out of 100 & the 3 fixes that matter most.</p>
+  <form id="form" novalidate>
+    <div class="field">
+      <label for="url">Your website</label>
+      <input id="url" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="yourcompany.com" required>
+      <button class="btn" id="go" type="submit">Scan my site</button>
+    </div>
+    <p class="formerr" id="formerr" hidden></p>
+    <p class="fine">Free. No email required. We only read the public pages anyone can see.</p>
+  </form>
+</header>
+
+<section class="log" id="log" aria-live="polite" hidden>
+  <div class="bar"><span>personal_agent.log</span><span id="logstate">scanning</span></div>
+  <ol id="loglines"></ol>
+</section>
+
+<section class="checks-preview" id="idle">
+  <div class="eyebrow">What the scanner checks</div>
+  <ol>
+    <li><span>Pricing an agent can read</span><span>14 pts</span></li>
+    <li><span>Content that loads as text</span><span>12 pts</span></li>
+    <li><span>Structured data on key pages</span><span>12 pts</span></li>
+    <li><span>AI agents allowed in the door</span><span>12 pts</span></li>
+    <li><span>Return & cancellation terms</span><span>10 pts</span></li>
+    <li><span>Homepage says what you sell</span><span>10 pts</span></li>
+    <li><span>Buy or book without a phone call</span><span>10 pts</span></li>
+    <li><span>An FAQ with the boring answers</span><span>7 pts</span></li>
+    <li><span>Reviews as readable text</span><span>7 pts</span></li>
+    <li><span>Machine-readable business details</span><span>6 pts</span></li>
+  </ol>
+  <p class="fine">Want the checklist version you score yourself? <a href="../">Read the Agent-Ready Playbook</a>.</p>
+</section>
+
+<div id="results" hidden></div>
+
+<footer>
+  <span>By Wayne Shirreffs · Founder, METRIQ - Acquisition Strategy for the AI-Native Economy</span>
+  <a href="../">The Agent-Ready Playbook</a>
+</footer>
+</div>
+
+<script>
+(function(){
+  var API=(document.querySelector('meta[name="metriq-api"]')||{}).content||'/agent-ready/api';
+  var form=document.getElementById('form'), input=document.getElementById('url'), go=document.getElementById('go');
+  var formerr=document.getElementById('formerr'), log=document.getElementById('log'), lines=document.getElementById('loglines');
+  var logstate=document.getElementById('logstate'), idle=document.getElementById('idle'), results=document.getElementById('results');
+  var bookingUrl='https://www.linkedin.com/in/wayneshirreffs/';
+  fetch(API+'/config').then(function(r){return r.ok?r.json():null}).then(function(c){if(c&&c.bookingUrl)bookingUrl=c.bookingUrl;document.querySelectorAll('[data-book]').forEach(function(a){a.href=bookingUrl})}).catch(function(){});
+
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function addLine(html,cls){var li=document.createElement('li');li.innerHTML=html;if(cls)li.className=cls;lines.appendChild(li);return li}
+  var STEPS=[
+    ['discover','loading your homepage like an agent would'],
+    ['read','title, headline & what you sell'],
+    ['fetch','/robots.txt <span class="c"># are agents even allowed in?</span>'],
+    ['look for','pricing page, return policy, FAQ'],
+    ['parse','structured data in your page code'],
+    ['compare','you vs. what an agent needs to buy'],
+    ['score','tallying 10 checks']
+  ];
+  var timers=[];
+  function startLog(host){
+    lines.innerHTML='';log.hidden=false;logstate.textContent='scanning';
+    addLine('<span class="c">›</span> task: <span class="k">find & buy from</span> '+esc(host));
+    STEPS.forEach(function(s,i){timers.push(setTimeout(function(){
+      var prev=lines.querySelector('.cursor');if(prev)prev.classList.remove('cursor');
+      addLine('<span class="c">›</span> <span class="k">'+s[0]+'</span> '+s[1],'cursor');
+    },(i+1)*(i<4?1500:2600)))});
+  }
+  function stopLog(){timers.forEach(clearTimeout);timers=[];var c=lines.querySelector('.cursor');if(c)c.classList.remove('cursor')}
+
+  var TIER={invisible:['Invisible to agents','Agents are skipping you right now, and nobody is telling you.'],findable:['Findable, not pickable','Agents can see you. They are still picking someone clearer.'],ready:['Agent-ready','You are ahead of most of your market.']};
+  var COLOR={invisible:'var(--bad)',findable:'var(--warn)',ready:'var(--good)'};
+  var CHIP={pass:'Pass',partial:'Partial',fail:'Miss'};
+
+  function pitch(score){
+    var lead = score==null ? "This is exactly what I fix for partners at METRIQ." :
+      score>=71 ? "You're in better shape than most. The next step is turning agent-ready into agent-preferred, so you win the order when 3 vendors look the same on paper." :
+      "None of this is hard to fix once you know where the leaks are. It's just not on anyone's radar yet, and the companies that move first get a real head start.";
+    return '<section class="pitch"><div class="eyebrow">If you want help</div><h2>Want me to walk through your score with you?</h2>'+
+      '<p>'+lead+'</p>'+
+      '<p>Grab 20 minutes with me. We\'ll go through your results, I\'ll tell you straight where I\'d start, & if it makes sense we can talk about what working together looks like. If it doesn\'t, you still walk away with a plan.</p>'+
+      '<p class="fine">Calls are best for businesses doing $5M+ a year. Everyone else, the playbook & this scan are yours to run with.</p>'+
+      '<div class="actions"><a class="btn" data-book href="'+esc(bookingUrl)+'" target="_blank" rel="noopener">Book a call with Wayne</a><button class="btn ghost" type="button" data-again>Scan another site</button></div>'+
+      '<div class="sign">I\'m rootin for ya,<br>• Wayne</div></section>';
+  }
+
+  function render(d){
+    var t=TIER[d.tier]||TIER.invisible;
+    var ai=d.ai;
+    var html='<section class="scorecard"><div class="big" aria-label="Score '+d.score+' out of 100">'+d.score+'<small>/100</small></div>'+
+      '<div><span class="tier '+esc(d.tier)+'">'+esc(t[0])+'</span><h2>'+esc(ai&&ai.headline?ai.headline:t[1])+'</h2><div class="site">'+esc(d.url)+'</div></div>'+
+      '<div class="track"><div class="fill" id="fill" style="background:'+COLOR[d.tier]+'"></div></div>'+
+      '<div class="ticks"><span style="left:0">0</span><span style="left:41%">41<i> Findable</i></span><span style="left:71%">71<i> Ready</i></span><span>100</span></div></section>';
+    if(ai&&ai.summary) html+='<p class="summary">'+esc(ai.summary)+'</p>';
+    if(d.fixes&&d.fixes.length){
+      html+='<section><div class="eyebrow">Start here</div><h2>'+(d.score>=95?'How to stay ahead':'Your top '+(d.fixes.length===1?'fix':d.fixes.length+' fixes'))+'</h2><div class="fixes">'+
+        d.fixes.map(function(f){return '<div class="fix"><h3>'+esc(f.title)+'</h3><p>'+esc(f.why)+'</p></div>'}).join('')+'</div></section>';
+    }
+    html+='<section><div class="eyebrow">Full report</div><h2>All 10 checks</h2><div class="list">'+
+      d.checks.map(function(c){return '<div class="row"><span class="chip '+c.status+'">'+CHIP[c.status]+'</span><div><h3>'+esc(c.label)+'</h3><p class="found">'+esc(c.found)+'</p>'+(c.status!=='pass'?'<p class="found"><strong>Fix:</strong> '+esc(c.fix)+'</p>':'')+'</div><span class="pts">'+c.points+'/'+c.max+'</span></div>'}).join('')+
+      '<p class="extra">'+(d.extras&&d.extras.llmsTxt?'Bonus: you have an llms.txt file, a plain-text guide written for AI. Nice.':'Bonus idea: add an llms.txt file, a short plain-text guide to your business written for AI.')+' We read '+(d.extras?d.extras.pagesRead:1)+' page'+((d.extras&&d.extras.pagesRead===1)?'':'s')+' of your site for this scan.</p></div></section>';
+    html+=pitch(d.score);
+    results.innerHTML=html;results.hidden=false;
+    requestAnimationFrame(function(){requestAnimationFrame(function(){var f=document.getElementById('fill');if(f)f.style.width=d.score+'%'})});
+  }
+
+  function renderError(e){
+    if(e.code==='blocked'){
+      results.innerHTML='<section class="blocked"><div class="eyebrow">Scan result</div><h2>Your site turned us away at the door</h2><p>That usually means a firewall or bot shield is turning away the AI agents your customers send, too. That\'s finding #1, and it\'s a big one.</p><p>Your web team can usually let known AI agents through without opening the door to junk traffic.</p></section>'+pitch(null);
+      results.hidden=false;return;
+    }
+    formerr.textContent=e.message||'Something went wrong. Try again.';formerr.hidden=false;
+  }
+
+  function hostOf(v){try{return new URL(/^https?:\/\//i.test(v)?v:'https://'+v).hostname}catch(_){return v}}
+
+  async function scan(raw){
+    var v=(raw||'').trim();
+    formerr.hidden=true;
+    if(!v||v.indexOf('.')<0){formerr.textContent='Enter your full website address, like yourcompany.com.';formerr.hidden=false;input.focus();return}
+    go.disabled=true;go.textContent='Scanning…';idle.hidden=true;results.hidden=true;results.innerHTML='';
+    startLog(hostOf(v));
+    try{
+      var r=await fetch(API+'/scan',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:v})});
+      var d=await r.json().catch(function(){return{error:{message:'Something broke on our end. Try again in a minute.'}}});
+      stopLog();
+      if(d.error){addLine('<span class="c">›</span> <span class="no">stopped</span> '+esc(d.error.code==='blocked'?'blocked at the door':'could not finish'));logstate.textContent='stopped';renderError(d.error);return}
+      var miss=d.checks.filter(function(c){return c.status!=='pass'}).length;
+      addLine('<span class="c">›</span> <span class="k">done</span> '+d.checks.length+' checks, <span class="'+(miss?'no':'ok')+'">'+miss+' need work</span>');
+      addLine('<span class="c">›</span> <span class="k">score</span> <span class="'+(d.score>=71?'ok':'no')+'">'+d.score+'/100</span>');
+      logstate.textContent='done';
+      render(d);
+      try{history.replaceState(null,'','?url='+encodeURIComponent(v))}catch(_){}
+      setTimeout(function(){results.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})},150);
+    }catch(err){
+      stopLog();logstate.textContent='stopped';
+      renderError({message:'We lost the connection. Check your internet and try again.'});
+    }finally{go.disabled=false;go.textContent='Scan my site'}
+  }
+
+  form.addEventListener('submit',function(e){e.preventDefault();scan(input.value)});
+  results.addEventListener('click',function(e){
+    if(e.target.closest('[data-again]')){input.value='';results.hidden=true;log.hidden=true;idle.hidden=false;window.scrollTo({top:0,behavior:'smooth'});input.focus()}
+  });
+  var pre=new URLSearchParams(location.search).get('url');
+  if(pre){input.value=pre;scan(pre)}
+})();
+</script>
+</body>
+</html>
